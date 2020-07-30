@@ -989,7 +989,8 @@ func ykSetCardID(tx *scTx, key [24]byte, id *CardID) error {
 	return nil
 }
 
-/*  CCCID set get.
+/*  CCC Card Capability Container 
+*   set get.
 *
 *
 */
@@ -1004,16 +1005,13 @@ var cccTemplate = []byte {
 const cccidOffset = 9
 const cccidSize = 14
 
-// CCC is the Card Capability Containter
-type CCC []byte
-
 // CCC return the CCC
-func (yk *YubiKey) CCC() (*CCC, error) {
+func (yk *YubiKey) CCC() ([]byte, error) {
 	return ykGetCCC(yk.tx)
 }
 
-func ykGetCCC(tx *scTx) (*CCC, error) {
-	// https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-73-4.pdf#page=17
+func ykGetCCC(tx *scTx) ([]byte, error) {
+	// https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-73-4.pdf#page=30
 	// OID for CCC is 5FC107
 
 	cmd := apdu{
@@ -1038,29 +1036,26 @@ func ykGetCCC(tx *scTx) (*CCC, error) {
 		return nil, fmt.Errorf("unmarshaling response: %v", err)
 	}
 
-	var (
-		id   CCC
-	)
-	id = obj
+	id := obj
 
-	return &id, nil
+	return id, nil
 }
 
 // SetCCC set the Capabilities
-func (yk *YubiKey) SetCCC(key [24]byte)  (*CCC, error) {
+func (yk *YubiKey) SetCCC(key [24]byte)  ([]byte, error) {
 	return ykSetCCC(yk.tx, key)
 }
 
-func ykSetCCC(tx *scTx, key [24]byte)  (ccc *CCC, err error) {
+func ykSetCCC(tx *scTx, key [24]byte)  ([]byte, error) {
 
-	*ccc = make([]byte, len(cccTemplate))
-	copy(*ccc, cccTemplate)
+	ccc := make([]byte, len(cccTemplate))
+	copy(ccc, cccTemplate)
 	id := make([]byte, cccidSize)
-	_, err = rand.Read(id)
+	_, err := rand.Read(id)
 	if err != nil {
 		return nil, fmt.Errorf("could not generate random bytes: %w", err)
 	}
-	copy(id[cccidOffset:], id[:])
+	copy(ccc[cccidOffset:], id[:])
 
 	data := append([]byte{
 		0x5c, // Tag list
@@ -1068,7 +1063,7 @@ func ykSetCCC(tx *scTx, key [24]byte)  (ccc *CCC, err error) {
 		0x5f,
 		0xc1,
 		0x07,
-	}, marshalASN1(0x53, *ccc)...)
+	}, marshalASN1(0x53, ccc)...)
 
 	cmd := apdu{
 		instruction: insPutData,
