@@ -484,7 +484,6 @@ func TestYubiKeyCardId(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	canModifyYubiKey = true
 	yk, close := newTestYubiKey(t)
 	defer close()
 	if err := yk.Reset(); err != nil {
@@ -512,7 +511,6 @@ func TestYubiKey_CCCID(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	canModifyYubiKey = true
 	yk, close := newTestYubiKey(t)
 	defer close()
 	if err := yk.Reset(); err != nil {
