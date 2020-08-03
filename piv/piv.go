@@ -989,11 +989,9 @@ func ykSetCardID(tx *scTx, key [24]byte, id *CardID) error {
 	return nil
 }
 
-/*  CCC Card Capability Container 
-*   set get.
-*
-*
-*/
+//
+//  CCCID Card Capability Container ID using a predefined yubico template
+//
 
 var cccTemplate = []byte {
 	0xf0, 0x15, 0xa0, 0x00, 0x00, 0x01, 0x16, 0xff, 0x02, 0x00, 0x00, 0x00, 0x00,
@@ -1005,12 +1003,12 @@ var cccTemplate = []byte {
 const cccidOffset = 9
 const cccidSize = 14
 
-// CCC return the CCC
-func (yk *YubiKey) CCC() ([]byte, error) {
-	return ykGetCCC(yk.tx)
+// CCCID return the CCC
+func (yk *YubiKey) CCCID() ([]byte, error) {
+	return ykGetCCCID(yk.tx)
 }
 
-func ykGetCCC(tx *scTx) ([]byte, error) {
+func ykGetCCCID(tx *scTx) ([]byte, error) {
 	// https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-73-4.pdf#page=30
 	// OID for CCC is 5FC107
 
@@ -1041,21 +1039,21 @@ func ykGetCCC(tx *scTx) ([]byte, error) {
 	return id, nil
 }
 
-// SetCCC set the Capabilities
-func (yk *YubiKey) SetCCC(key [24]byte)  ([]byte, error) {
-	return ykSetCCC(yk.tx, key)
+// SetCCCID set the Capabilities ID
+func (yk *YubiKey) SetCCCID(key [24]byte)  ([]byte, error) {
+	return ykSetCCCID(yk.tx, key)
 }
 
-func ykSetCCC(tx *scTx, key [24]byte)  ([]byte, error) {
+func ykSetCCCID(tx *scTx, key [24]byte)  ([]byte, error) {
 
-	ccc := make([]byte, len(cccTemplate))
-	copy(ccc, cccTemplate)
+	cccid := make([]byte, len(cccTemplate))
+	copy(cccid, cccTemplate)
 	id := make([]byte, cccidSize)
 	_, err := rand.Read(id)
 	if err != nil {
 		return nil, fmt.Errorf("could not generate random bytes: %w", err)
 	}
-	copy(ccc[cccidOffset:], id[:])
+	copy(cccid[cccidOffset:], id[:])
 
 	data := append([]byte{
 		0x5c, // Tag list
@@ -1063,7 +1061,7 @@ func ykSetCCC(tx *scTx, key [24]byte)  ([]byte, error) {
 		0x5f,
 		0xc1,
 		0x07,
-	}, marshalASN1(0x53, ccc)...)
+	}, marshalASN1(0x53, cccid)...)
 
 	cmd := apdu{
 		instruction: insPutData,
@@ -1081,5 +1079,5 @@ func ykSetCCC(tx *scTx, key [24]byte)  ([]byte, error) {
 		return nil, fmt.Errorf("command failed: %w", err)
 	}
 
-	return ccc, nil
+	return cccid, nil
 }

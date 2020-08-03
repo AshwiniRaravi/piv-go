@@ -508,33 +508,38 @@ func TestYubiKeyCardId(t *testing.T) {
 	}
 }
 
-func TestYubiKey_CCC(t *testing.T) {
+func TestYubiKey_CCCID(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-
+	canModifyYubiKey = true
 	yk, close := newTestYubiKey(t)
 	defer close()
 	if err := yk.Reset(); err != nil {
 		t.Fatalf("resetting yubikey: %v", err)
 	}
 
-	ccc, err := yk.SetCCC(DefaultManagementKey)
-	if err != nil {
-		t.Fatalf("expecting not found ccc %v", err)
+	
+	if _, err := yk.CCCID(); ! errors.Is(err, ErrNotFound) {
+		t.Fatalf("expecting not found cccid %v", err)
 	}
 
-	strccc := hex.EncodeToString(ccc)
-
-	ccc, err = yk.CCC()
+	cccid, err := yk.SetCCCID(DefaultManagementKey)
 	if err != nil {
-		t.Fatalf("expecting not found ccc %v", ccc)
+		t.Fatalf("expecting not found cccid %v", err)
 	}
 
-	newccc := hex.EncodeToString(ccc)
+	strcccid := hex.EncodeToString(cccid)
+
+	cccid, err = yk.CCCID()
+	if err != nil {
+		t.Fatalf("expecting not found ccc %v", cccid)
+	}
+
+	newcccid := hex.EncodeToString(cccid)
 
 
-	if strccc != newccc {
-		t.Fatalf("expecting these to be same: %v and %v", ccc, newccc)
+	if strcccid != newcccid {
+		t.Fatalf("expecting these to be same: %v and %v", cccid, newcccid)
 	}
 }
