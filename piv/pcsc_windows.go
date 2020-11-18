@@ -182,6 +182,7 @@ func (t *scTx) transmit(req []byte) (more bool, b []byte, err error) {
 	)
 
 	if err := scCheck(r0); err != nil {
+		fmt.Printf("request is reaching here in windows %v", r0)
 		return false, nil, fmt.Errorf("transmitting request: %w", err)
 	}
 	if respN < 2 {

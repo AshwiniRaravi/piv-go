@@ -130,6 +130,7 @@ func (t *scTx) transmit(req []byte) (more bool, b []byte, err error) {
 		(*C.BYTE)(&req[0]), reqN, nil,
 		(*C.BYTE)(&resp[0]), &respN)
 	if err := scCheck(rc); err != nil {
+		fmt.Printf("request is reaching here in unix %v", rc)
 		return false, nil, fmt.Errorf("transmitting request: %w", err)
 	}
 	if respN < 2 {
